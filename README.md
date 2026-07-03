@@ -86,9 +86,15 @@ SessionStart = [
 ```
 
 As a Codex `SessionStart` hook, the guard exits `0` and injects warning context
-only when there is a mismatch. It also emits a user-visible hook message so the
-TUI can show the mismatch instead of only passing it to the agent. It does not
-block sessions by default.
+only when there is a mismatch. Current Codex TUI startup screens do not render
+successful hook output as a visible warning; the warning is provided to the
+agent as context without blocking the session.
+
+To see the same check yourself, run:
+
+```sh
+node-engine-guard --json
+```
 
 ## Use
 

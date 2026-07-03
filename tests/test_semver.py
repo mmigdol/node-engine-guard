@@ -36,7 +36,7 @@ class SemverTests(unittest.TestCase):
 
 
 class CodexHookOutputTests(unittest.TestCase):
-    def test_warning_is_visible_and_in_context(self):
+    def test_warning_is_emitted_as_system_message_and_context(self):
         output = json.loads(codex_hook_output(CheckResult(False, "node is wrong")))
 
         self.assertEqual(output["systemMessage"], "WARNING: node is wrong")
