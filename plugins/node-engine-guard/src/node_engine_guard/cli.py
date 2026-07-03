@@ -44,6 +44,13 @@ def codex_hook_output(result: CheckResult) -> str:
     )
 
 
+def codex_hook_failure_message(result: CheckResult) -> str:
+    return (
+        f"node-engine-guard: {result.message}\n"
+        "Run `node-engine-guard --json` in this project to inspect the resolved node."
+    )
+
+
 def install_snippet() -> str:
     installed = shutil.which("node-engine-guard")
     if installed:
@@ -69,7 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--cwd", type=Path, default=None, help="Project directory to check.")
-    parser.add_argument("--codex-hook", action="store_true", help="Read Codex hook JSON from stdin and emit Codex hook JSON.")
+    parser.add_argument("--codex-hook", action="store_true", help="Read Codex hook JSON from stdin and fail when node does not satisfy engines.node.")
+    parser.add_argument("--soft", action="store_true", help="With --codex-hook, emit context but do not fail on mismatch.")
     parser.add_argument("--strict", action="store_true", help="Exit nonzero when node does not satisfy engines.node.")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument("--print-codex-install", action="store_true", help="Print a manual Codex hook install snippet.")
@@ -91,10 +99,14 @@ def main(argv: list[str] | None = None) -> int:
     result = check_node_engine(cwd)
 
     if args.codex_hook:
-        output = codex_hook_output(result)
-        if output:
+        if result.ok:
+            return 0
+        if args.soft:
+            output = codex_hook_output(result)
             print(output)
-        return 0
+            return 0
+        print(codex_hook_failure_message(result), file=sys.stderr)
+        return 1
 
     if args.json:
         print(

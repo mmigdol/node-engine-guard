@@ -7,14 +7,14 @@ This catches a common source of confusing failures: your interactive terminal
 uses `nvm`, aliases, shell functions, or a login-shell setup, while hooks and
 agent subprocesses resolve a different `node` from `PATH`.
 
-As a Codex `SessionStart` hook, `node-engine-guard` warns the agent when the
+As a Codex `SessionStart` hook, `node-engine-guard` fails fast when the
 project's declared Node engine does not match the Node binary Codex can actually
-run. It exits successfully by default, so it adds context without blocking your
-session.
+run. Codex currently does not render successful hook output in the startup TUI,
+so the default hook behavior is intentionally blocking on mismatch.
 
 ## Features
 
-- Codex plugin with a `SessionStart` hook
+- Codex plugin with a blocking `SessionStart` hook
 - CLI check for local debugging and CI
 - Strict mode for failing CI when Node is wrong
 - No Node dependency, so it can run before Node is trusted
@@ -85,16 +85,19 @@ SessionStart = [
 ]
 ```
 
-As a Codex `SessionStart` hook, the guard exits `0` and injects warning context
-only when there is a mismatch. Current Codex TUI startup screens do not render
-successful hook output as a visible warning; the warning is provided to the
-agent as context without blocking the session.
+As a Codex `SessionStart` hook, the guard exits nonzero when there is a mismatch.
+That makes the problem visible as a hook failure instead of silently continuing
+with the wrong Node.
 
 To see the same check yourself, run:
 
 ```sh
 node-engine-guard --json
 ```
+
+If you intentionally want the older non-blocking behavior, add `--soft` to the
+hook command. Soft mode exits `0` and injects context for the agent, but current
+Codex TUI startup screens do not render that context as a visible warning.
 
 ## Use
 
@@ -103,6 +106,7 @@ node-engine-guard
 node-engine-guard --cwd /path/to/project
 node-engine-guard --strict
 node-engine-guard --json
+node-engine-guard --codex-hook --soft
 ```
 
 By default the command exits `0` and prints a warning or success message.

@@ -1,8 +1,12 @@
+import contextlib
+import io
 import json
+from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 from node_engine_guard.check import CheckResult
-from node_engine_guard.cli import codex_hook_output
+from node_engine_guard.cli import codex_hook_output, main
 from node_engine_guard.semver import Version, parse_version, satisfies_range
 
 
@@ -47,6 +51,34 @@ class CodexHookOutputTests(unittest.TestCase):
                 "additionalContext": "WARNING: node is wrong",
             },
         )
+
+    def test_codex_hook_fails_by_default_on_mismatch(self):
+        result = CheckResult(False, "node is wrong")
+        stderr = io.StringIO()
+
+        with (
+            patch("node_engine_guard.cli.parse_hook_cwd", return_value=Path("/tmp/project")),
+            patch("node_engine_guard.cli.check_node_engine", return_value=result),
+            contextlib.redirect_stderr(stderr),
+        ):
+            code = main(["--codex-hook"])
+
+        self.assertEqual(code, 1)
+        self.assertIn("node-engine-guard: node is wrong", stderr.getvalue())
+
+    def test_codex_hook_soft_mode_exits_zero_with_context(self):
+        result = CheckResult(False, "node is wrong")
+        stdout = io.StringIO()
+
+        with (
+            patch("node_engine_guard.cli.parse_hook_cwd", return_value=Path("/tmp/project")),
+            patch("node_engine_guard.cli.check_node_engine", return_value=result),
+            contextlib.redirect_stdout(stdout),
+        ):
+            code = main(["--codex-hook", "--soft"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(stdout.getvalue())["systemMessage"], "WARNING: node is wrong")
 
 
 if __name__ == "__main__":
