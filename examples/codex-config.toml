@@ -1,0 +1,6 @@
+[hooks]
+SessionStart = [
+  { matcher = "startup|resume|clear|compact", hooks = [
+    { type = "command", command = "/Users/you/.local/bin/node-engine-guard --codex-hook", timeout = 5 }
+  ] }
+]

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "node-engine-guard"
+version = "0.1.0"
+description = "Check that non-interactive node satisfies package.json engines.node."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Michael Migdol" }
+]
+keywords = ["node", "engines", "codex", "hooks", "nvm", "semver"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Homepage = "https://github.com/mmigdol/node-engine-guard"
+Repository = "https://github.com/mmigdol/node-engine-guard"
+Issues = "https://github.com/mmigdol/node-engine-guard/issues"
+
+[project.scripts]
+node-engine-guard = "node_engine_guard.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
