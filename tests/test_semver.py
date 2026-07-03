@@ -1,5 +1,8 @@
+import json
 import unittest
 
+from node_engine_guard.check import CheckResult
+from node_engine_guard.cli import codex_hook_output
 from node_engine_guard.semver import Version, parse_version, satisfies_range
 
 
@@ -30,6 +33,20 @@ class SemverTests(unittest.TestCase):
         self.assertTrue(satisfies_range(Version(20, 19, 0), "^20.19.0 || >=22"))
         self.assertTrue(satisfies_range(Version(22, 0, 0), "^20.19.0 || >=22"))
         self.assertFalse(satisfies_range(Version(21, 6, 2), "^20.19.0 || >=22"))
+
+
+class CodexHookOutputTests(unittest.TestCase):
+    def test_warning_is_visible_and_in_context(self):
+        output = json.loads(codex_hook_output(CheckResult(False, "node is wrong")))
+
+        self.assertEqual(output["systemMessage"], "WARNING: node is wrong")
+        self.assertEqual(
+            output["hookSpecificOutput"],
+            {
+                "hookEventName": "SessionStart",
+                "additionalContext": "WARNING: node is wrong",
+            },
+        )
 
 
 if __name__ == "__main__":

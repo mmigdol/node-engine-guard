@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"${CODEX_PLUGIN_ROOT}/hooks/node-engine-guard.py\" --codex-hook",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

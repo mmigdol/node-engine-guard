@@ -32,11 +32,13 @@ def parse_hook_cwd() -> Path | None:
 def codex_hook_output(result: CheckResult) -> str:
     if result.ok:
         return ""
+    message = f"WARNING: {result.message}"
     return json.dumps(
         {
+            "systemMessage": message,
             "hookSpecificOutput": {
                 "hookEventName": "SessionStart",
-                "additionalContext": f"WARNING: {result.message}",
+                "additionalContext": message,
             }
         }
     )

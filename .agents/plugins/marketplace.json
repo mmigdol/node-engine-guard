@@ -1,0 +1,20 @@
+{
+  "name": "node-engine-guard",
+  "interface": {
+    "displayName": "Node Engine Guard"
+  },
+  "plugins": [
+    {
+      "name": "node-engine-guard",
+      "source": {
+        "source": "local",
+        "path": "./plugins/node-engine-guard"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

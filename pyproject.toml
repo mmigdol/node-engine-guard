@@ -32,4 +32,4 @@ Issues = "https://github.com/mmigdol/node-engine-guard/issues"
 node-engine-guard = "node_engine_guard.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["plugins/node-engine-guard/src"]

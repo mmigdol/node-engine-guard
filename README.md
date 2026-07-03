@@ -1,6 +1,6 @@
 # node-engine-guard
 
-Codex hook and CLI for checking that the `node` available to non-interactive
+Codex plugin and CLI for checking that the `node` available to non-interactive
 tools satisfies the current project's `package.json#engines.node`.
 
 This catches a common source of confusing failures: your interactive terminal
@@ -14,13 +14,30 @@ session.
 
 ## Features
 
-- Codex `SessionStart` hook mode with valid hook JSON output
+- Codex plugin with a `SessionStart` hook
 - CLI check for local debugging and CI
 - Strict mode for failing CI when Node is wrong
 - No Node dependency, so it can run before Node is trusted
 - Supports common `engines.node` semver ranges
 
-## Install the CLI
+## Install the Codex Plugin
+
+```sh
+codex marketplace add mmigdol/node-engine-guard
+```
+
+Then open the Codex app plugin marketplace and install **Node Engine Guard** from
+the `node-engine-guard` marketplace.
+
+Restart Codex after enabling the plugin. The TUI may ask you to review and trust
+the new hook the first time it sees it.
+
+This is the recommended install path. It lets Codex manage the plugin and hook
+instead of asking a shell script to edit `~/.codex/config.toml`.
+
+## CLI Install
+
+The CLI is optional. Install it if you want to run checks manually or in CI:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/install.sh | sh
@@ -32,18 +49,17 @@ The installer writes a dependency-free Python CLI to:
 ~/.local/bin/node-engine-guard
 ```
 
-## Install the Codex Hook
+## Legacy Manual Hook Install
 
-Install the CLI and add the Codex hook when it is safe to patch
-`~/.codex/config.toml` automatically:
+Prefer the plugin install above. This path exists for environments where Codex
+plugin marketplaces are unavailable.
+
+Install the CLI and add the hook when it is safe to patch `~/.codex/config.toml`
+automatically:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/install.sh | sh -s -- --codex-hook
 ```
-
-The installer backs up `~/.codex/config.toml` before editing it. If your config
-already has a `[hooks]` table, the installer does not try to merge TOML; it
-prints the hook block for manual installation instead and exits nonzero.
 
 Manual install:
 
@@ -70,7 +86,9 @@ SessionStart = [
 ```
 
 As a Codex `SessionStart` hook, the guard exits `0` and injects warning context
-only when there is a mismatch. It does not block sessions by default.
+only when there is a mismatch. It also emits a user-visible hook message so the
+TUI can show the mismatch instead of only passing it to the agent. It does not
+block sessions by default.
 
 ## Use
 
@@ -107,6 +125,6 @@ It is intentionally dependency-free so it can run before Node is trusted.
 ## Development
 
 ```sh
-PYTHONPATH=src /usr/bin/python3 -m unittest discover -s tests
-PYTHONPATH=src /usr/bin/python3 -m node_engine_guard --json
+PYTHONPATH=plugins/node-engine-guard/src /usr/bin/python3 -m unittest discover -s tests
+PYTHONPATH=plugins/node-engine-guard/src /usr/bin/python3 -m node_engine_guard --json
 ```

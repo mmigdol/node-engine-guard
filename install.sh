@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-repo_url="https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/src/node_engine_guard"
+repo_url="https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/plugins/node-engine-guard/src/node_engine_guard"
 target_dir="${HOME}/.local/lib/node-engine-guard"
 bin_dir="${HOME}/.local/bin"
 install_codex_hook=0

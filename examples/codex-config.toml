@@ -1,3 +1,8 @@
+# Legacy manual install example. Prefer:
+#
+#   codex marketplace add mmigdol/node-engine-guard
+#   then install Node Engine Guard from the Codex app plugin marketplace.
+
 [hooks]
 SessionStart = [
   { matcher = "startup|resume|clear|compact", hooks = [
