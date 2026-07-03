@@ -20,7 +20,7 @@ session.
 - No Node dependency, so it can run before Node is trusted
 - Supports common `engines.node` semver ranges
 
-## Install
+## Install the CLI
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/install.sh | sh
@@ -31,6 +31,33 @@ The installer writes a dependency-free Python CLI to:
 ```text
 ~/.local/bin/node-engine-guard
 ```
+
+## Install the Codex Hook
+
+1. Print the hook block with your local install path:
+
+   ```sh
+   ~/.local/bin/node-engine-guard --print-codex-install
+   ```
+
+2. Add the printed block to `~/.codex/config.toml`.
+
+3. Restart Codex. The TUI may ask you to review and trust the new hook the first
+   time it sees it.
+
+The hook block looks like this:
+
+```toml
+[hooks]
+SessionStart = [
+  { matcher = "startup|resume|clear|compact", hooks = [
+    { type = "command", command = "/Users/you/.local/bin/node-engine-guard --codex-hook", timeout = 5 }
+  ] }
+]
+```
+
+As a Codex `SessionStart` hook, the guard exits `0` and injects warning context
+only when there is a mismatch. It does not block sessions by default.
 
 ## Use
 
@@ -44,28 +71,6 @@ node-engine-guard --json
 By default the command exits `0` and prints a warning or success message.
 Use `--strict` in CI to fail when the resolved non-interactive Node does not
 satisfy `engines.node`.
-
-## Codex Hook
-
-Print a Codex hook snippet:
-
-```sh
-node-engine-guard --print-codex-install
-```
-
-Manual example:
-
-```toml
-[hooks]
-SessionStart = [
-  { matcher = "startup|resume|clear|compact", hooks = [
-    { type = "command", command = "/Users/you/.local/bin/node-engine-guard --codex-hook", timeout = 5 }
-  ] }
-]
-```
-
-As a Codex `SessionStart` hook, the guard exits `0` and injects warning context
-only when there is a mismatch. It does not block sessions by default.
 
 ## Why not just rely on nvm?
 

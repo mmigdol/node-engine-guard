@@ -21,5 +21,5 @@ chmod +x "${bin_dir}/node-engine-guard"
 
 echo "Installed ${bin_dir}/node-engine-guard"
 echo
-echo "For Codex hook setup, run:"
+echo "Next: print the Codex hook block and add it to ~/.codex/config.toml:"
 echo "  ${bin_dir}/node-engine-guard --print-codex-install"
