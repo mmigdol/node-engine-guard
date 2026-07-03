@@ -34,6 +34,19 @@ The installer writes a dependency-free Python CLI to:
 
 ## Install the Codex Hook
 
+Install the CLI and add the Codex hook when it is safe to patch
+`~/.codex/config.toml` automatically:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/install.sh | sh -s -- --codex-hook
+```
+
+The installer backs up `~/.codex/config.toml` before editing it. If your config
+already has a `[hooks]` table, the installer does not try to merge TOML; it
+prints the hook block for manual installation instead and exits nonzero.
+
+Manual install:
+
 1. Print the hook block with your local install path:
 
    ```sh
