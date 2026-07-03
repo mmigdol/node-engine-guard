@@ -1,11 +1,24 @@
 # node-engine-guard
 
-Check that the `node` available to non-interactive tools satisfies the current
-project's `package.json#engines.node`.
+Codex hook and CLI for checking that the `node` available to non-interactive
+tools satisfies the current project's `package.json#engines.node`.
 
 This catches a common source of confusing failures: your interactive terminal
 uses `nvm`, aliases, shell functions, or a login-shell setup, while hooks and
 agent subprocesses resolve a different `node` from `PATH`.
+
+As a Codex `SessionStart` hook, `node-engine-guard` warns the agent when the
+project's declared Node engine does not match the Node binary Codex can actually
+run. It exits successfully by default, so it adds context without blocking your
+session.
+
+## Features
+
+- Codex `SessionStart` hook mode with valid hook JSON output
+- CLI check for local debugging and CI
+- Strict mode for failing CI when Node is wrong
+- No Node dependency, so it can run before Node is trusted
+- Supports common `engines.node` semver ranges
 
 ## Install
 
