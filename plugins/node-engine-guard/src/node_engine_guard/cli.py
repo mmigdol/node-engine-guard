@@ -29,26 +29,24 @@ def parse_hook_cwd() -> Path | None:
     return None
 
 
-def codex_hook_output(result: CheckResult) -> str:
+def codex_hook_output(result: CheckResult, *, soft: bool = False) -> str:
     if result.ok:
         return ""
-    message = f"WARNING: {result.message}"
-    return json.dumps(
-        {
-            "systemMessage": message,
-            "hookSpecificOutput": {
-                "hookEventName": "SessionStart",
-                "additionalContext": message,
-            }
+    message = f"node-engine-guard: {result.message}"
+    context = f"{message}\nRun `node-engine-guard --json` in this project to inspect the resolved node."
+    output = {
+        "hookSpecificOutput": {
+            "hookEventName": "SessionStart",
+            "additionalContext": context,
         }
-    )
-
-
-def codex_hook_failure_message(result: CheckResult) -> str:
-    return (
-        f"node-engine-guard: {result.message}\n"
-        "Run `node-engine-guard --json` in this project to inspect the resolved node."
-    )
+    }
+    if soft:
+        output["continue"] = True
+        output["systemMessage"] = f"WARNING: {result.message}"
+    else:
+        output["continue"] = False
+        output["stopReason"] = context
+    return json.dumps(output)
 
 
 def install_snippet() -> str:
@@ -58,7 +56,12 @@ def install_snippet() -> str:
     else:
         executable = Path(sys.argv[0]).expanduser()
         command = f"/usr/bin/python3 {executable} --codex-hook"
-    return f"""Add this to ~/.codex/config.toml:
+    return f"""Deprecated manual hook example. Prefer:
+
+  codex plugin marketplace add mmigdol/node-engine-guard
+  codex plugin add node-engine-guard@node-engine-guard
+
+If you still need a legacy manual hook, add this to ~/.codex/config.toml:
 
 [hooks]
 SessionStart = [
@@ -76,8 +79,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("--cwd", type=Path, default=None, help="Project directory to check.")
-    parser.add_argument("--codex-hook", action="store_true", help="Read Codex hook JSON from stdin and fail when node does not satisfy engines.node.")
-    parser.add_argument("--soft", action="store_true", help="With --codex-hook, emit context but do not fail on mismatch.")
+    parser.add_argument("--codex-hook", action="store_true", help="Read Codex hook JSON from stdin and stop the session when node does not satisfy engines.node.")
+    parser.add_argument("--soft", action="store_true", help="With --codex-hook, emit context but allow the session to continue on mismatch.")
     parser.add_argument("--strict", action="store_true", help="Exit nonzero when node does not satisfy engines.node.")
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument("--print-codex-install", action="store_true", help="Print a manual Codex hook install snippet.")
@@ -101,12 +104,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.codex_hook:
         if result.ok:
             return 0
-        if args.soft:
-            output = codex_hook_output(result)
-            print(output)
-            return 0
-        print(codex_hook_failure_message(result), file=sys.stderr)
-        return 1
+        output = codex_hook_output(result, soft=args.soft)
+        print(output)
+        return 0
 
     if args.json:
         print(

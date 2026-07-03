@@ -1,7 +1,7 @@
 {
   "name": "node-engine-guard",
-  "version": "0.2.1",
-  "description": "Codex SessionStart hook that fails when non-interactive node does not satisfy package.json engines.node.",
+  "version": "0.2.2",
+  "description": "Codex SessionStart hook that stops when non-interactive node does not satisfy package.json engines.node.",
   "author": {
     "name": "Michael Migdol",
     "url": "https://github.com/mmigdol"
@@ -20,8 +20,8 @@
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Node Engine Guard",
-    "shortDescription": "Fail fast when Codex sees a node version that does not satisfy package.json engines.node.",
-    "longDescription": "Adds a Codex SessionStart hook that verifies the actual non-interactive node on PATH against the current project's package.json engines.node range and fails on mismatch. Useful when interactive shells use nvm or aliases but agent subprocesses resolve a different node.",
+    "shortDescription": "Stop fast when Codex sees a node version that does not satisfy package.json engines.node.",
+    "longDescription": "Adds a Codex SessionStart hook that verifies the actual non-interactive node on PATH against the current project's package.json engines.node range and stops the session on mismatch. Useful when interactive shells use nvm or aliases but agent subprocesses resolve a different node.",
     "developerName": "Michael Migdol",
     "category": "Developer Tools",
     "capabilities": [

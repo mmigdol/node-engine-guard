@@ -1,7 +1,10 @@
-# Legacy manual install example. Prefer:
+# Deprecated legacy manual install example. Prefer the Codex plugin:
 #
-#   codex marketplace add mmigdol/node-engine-guard
-#   then install Node Engine Guard from the Codex app plugin marketplace.
+#   codex plugin marketplace add mmigdol/node-engine-guard
+#   codex plugin add node-engine-guard@node-engine-guard
+#
+# Current Codex builds should load this hook from the plugin manifest instead
+# of a shell installer appending a top-level [hooks] block to config.toml.
 
 [hooks]
 SessionStart = [

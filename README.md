@@ -7,10 +7,10 @@ This catches a common source of confusing failures: your interactive terminal
 uses `nvm`, aliases, shell functions, or a login-shell setup, while hooks and
 agent subprocesses resolve a different `node` from `PATH`.
 
-As a Codex `SessionStart` hook, `node-engine-guard` fails fast when the
+As a Codex `SessionStart` hook, `node-engine-guard` stops the session when the
 project's declared Node engine does not match the Node binary Codex can actually
-run. Codex currently does not render successful hook output in the startup TUI,
-so the default hook behavior is intentionally blocking on mismatch.
+run. The hook uses Codex's blocking hook contract: it exits successfully and
+emits `{"continue": false, ...}` on mismatch.
 
 ## Features
 
@@ -23,14 +23,13 @@ so the default hook behavior is intentionally blocking on mismatch.
 ## Install the Codex Plugin
 
 ```sh
-codex marketplace add mmigdol/node-engine-guard
+codex plugin marketplace add mmigdol/node-engine-guard
+codex plugin add node-engine-guard@node-engine-guard
 ```
 
-Then open the Codex app plugin marketplace and install **Node Engine Guard** from
-the `node-engine-guard` marketplace.
-
-Restart Codex after enabling the plugin. The TUI may ask you to review and trust
-the new hook the first time it sees it.
+Restart Codex after enabling or upgrading the plugin. Existing Codex TUI windows
+and app-server processes may have already loaded their hook registry. The TUI may
+ask you to review and trust the new hook the first time it sees it.
 
 This is the recommended install path. It lets Codex manage the plugin and hook
 instead of asking a shell script to edit `~/.codex/config.toml`.
@@ -49,55 +48,33 @@ The installer writes a dependency-free Python CLI to:
 ~/.local/bin/node-engine-guard
 ```
 
-## Legacy Manual Hook Install
+## Verify Manually
 
-Prefer the plugin install above. This path exists for environments where Codex
-plugin marketplaces are unavailable.
-
-Install the CLI and add the hook when it is safe to patch `~/.codex/config.toml`
-automatically:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/mmigdol/node-engine-guard/main/install.sh | sh -s -- --codex-hook
-```
-
-Manual install:
-
-1. Print the hook block with your local install path:
-
-   ```sh
-   ~/.local/bin/node-engine-guard --print-codex-install
-   ```
-
-2. Add the printed block to `~/.codex/config.toml`.
-
-3. Restart Codex. The TUI may ask you to review and trust the new hook the first
-   time it sees it.
-
-The hook block looks like this:
-
-```toml
-[hooks]
-SessionStart = [
-  { matcher = "startup|resume|clear|compact", hooks = [
-    { type = "command", command = "/Users/you/.local/bin/node-engine-guard --codex-hook", timeout = 5 }
-  ] }
-]
-```
-
-As a Codex `SessionStart` hook, the guard exits nonzero when there is a mismatch.
-That makes the problem visible as a hook failure instead of silently continuing
-with the wrong Node.
-
-To see the same check yourself, run:
+To see the same check yourself in a project, run:
 
 ```sh
 node-engine-guard --json
 ```
 
-If you intentionally want the older non-blocking behavior, add `--soft` to the
-hook command. Soft mode exits `0` and injects context for the agent, but current
-Codex TUI startup screens do not render that context as a visible warning.
+Do not install the Codex hook with `install.sh --codex-hook`. That legacy path
+edits `~/.codex/config.toml` directly and is not the recommended hook mechanism
+for current Codex builds.
+
+If you intentionally want non-blocking hook behavior in a custom hook, add
+`--soft` to the hook command. Soft mode exits `0`, emits `continue:true`, and
+injects context for the agent.
+
+## Why SessionStart, Not PreToolUse?
+
+This guard checks a project-level invariant: "the non-interactive Node available
+to Codex satisfies this project's `package.json#engines.node`." A `SessionStart`
+hook catches that before work begins and applies even if the agent never calls
+`bash`.
+
+A `PreToolUse` hook is useful when the goal is specifically to block one tool
+call, such as `bash`, with exit code `2`. It is not the best default here because
+it fires later, repeats on every matching tool call, and can miss workflows that
+do not invoke that tool.
 
 ## Use
 

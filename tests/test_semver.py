@@ -40,31 +40,34 @@ class SemverTests(unittest.TestCase):
 
 
 class CodexHookOutputTests(unittest.TestCase):
-    def test_warning_is_emitted_as_system_message_and_context(self):
+    def test_mismatch_stops_session_with_codex_contract(self):
         output = json.loads(codex_hook_output(CheckResult(False, "node is wrong")))
 
-        self.assertEqual(output["systemMessage"], "WARNING: node is wrong")
+        self.assertFalse(output["continue"])
+        self.assertIn("node-engine-guard: node is wrong", output["stopReason"])
         self.assertEqual(
             output["hookSpecificOutput"],
             {
                 "hookEventName": "SessionStart",
-                "additionalContext": "WARNING: node is wrong",
+                "additionalContext": "node-engine-guard: node is wrong\nRun `node-engine-guard --json` in this project to inspect the resolved node.",
             },
         )
 
-    def test_codex_hook_fails_by_default_on_mismatch(self):
+    def test_codex_hook_stops_by_default_on_mismatch(self):
         result = CheckResult(False, "node is wrong")
-        stderr = io.StringIO()
+        stdout = io.StringIO()
 
         with (
             patch("node_engine_guard.cli.parse_hook_cwd", return_value=Path("/tmp/project")),
             patch("node_engine_guard.cli.check_node_engine", return_value=result),
-            contextlib.redirect_stderr(stderr),
+            contextlib.redirect_stdout(stdout),
         ):
             code = main(["--codex-hook"])
 
-        self.assertEqual(code, 1)
-        self.assertIn("node-engine-guard: node is wrong", stderr.getvalue())
+        self.assertEqual(code, 0)
+        output = json.loads(stdout.getvalue())
+        self.assertFalse(output["continue"])
+        self.assertIn("node-engine-guard: node is wrong", output["stopReason"])
 
     def test_codex_hook_soft_mode_exits_zero_with_context(self):
         result = CheckResult(False, "node is wrong")
@@ -78,7 +81,9 @@ class CodexHookOutputTests(unittest.TestCase):
             code = main(["--codex-hook", "--soft"])
 
         self.assertEqual(code, 0)
-        self.assertEqual(json.loads(stdout.getvalue())["systemMessage"], "WARNING: node is wrong")
+        output = json.loads(stdout.getvalue())
+        self.assertTrue(output["continue"])
+        self.assertEqual(output["systemMessage"], "WARNING: node is wrong")
 
 
 if __name__ == "__main__":
