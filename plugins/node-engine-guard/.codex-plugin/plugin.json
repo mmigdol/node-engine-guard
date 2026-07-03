@@ -1,6 +1,6 @@
 {
   "name": "node-engine-guard",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Codex SessionStart hook that fails when non-interactive node does not satisfy package.json engines.node.",
   "author": {
     "name": "Michael Migdol",
@@ -17,6 +17,7 @@
     "nvm",
     "semver"
   ],
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Node Engine Guard",
     "shortDescription": "Fail fast when Codex sees a node version that does not satisfy package.json engines.node.",
